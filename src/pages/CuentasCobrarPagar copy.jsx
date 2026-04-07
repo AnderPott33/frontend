@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
 import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 import { RiFileSearchFill } from "react-icons/ri";
@@ -113,17 +114,25 @@ export default function CuentasCobrarPagar() {
       <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-2 bg-white p-4 rounded-2xl shadow-sm">
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-start md:items-center">
           <div className="w-full md:w-80 h-[52px]">
-            <SelectCustom
-              options={cuentasList.map(c => ({ value: c.id, label: c.nombre }))}
+            <SelectAsync
+              fetchUrl={`${API}/api/cuenta`}
               value={cuentaSelect}
               onChange={(option) => setCuentaSelect(option)}
+              valueKey="id"
+              labelKey="nombre"
+              placeholder="Seleccionar cuenta"
+              limit={200}
             />
           </div>
           <div className="w-full md:w-80 h-[52px]">
-            <SelectCustom
-              options={entidadesList.map(e => ({ value: e.id, label: e.nombre }))}
+            <SelectAsync
+              fetchUrl={`${API}/api/entidad`}
               value={entidadSelect}
               onChange={(option) => setEntidadSelect(option)}
+              valueKey="id"
+              labelKey="nombre"
+              placeholder="Seleccionar entidad"
+              limit={200}
             />
           </div>
           <input

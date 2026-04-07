@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import { AuthContext } from "../context/AuthContext";
 import DataTable from "../components/DataTable";
 import { FaPlusSquare, FaCheckCircle, FaMinusSquare } from "react-icons/fa";
@@ -214,22 +215,7 @@ export default function RecibeValores() {
   /* Boton para eliminar linea */
   const handleEliminar = (id) => setItemsDetalle(itemsDetalle.filter(item => item.id !== id));
 
-  /* Busca las entidades para el select de los modales */
-  const buscarEntidad = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(`${API}/api/entidad`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setEntidad(res.data || []);
-    } catch (error) {
-      console.error("No se pudo obtener entidades: ", error);
-    }
-  };
-
-  useEffect(() => {
-    buscarEntidad();
-  }, []);
+  // Usamos SelectAsync en los modales para cargar entidades bajo demanda
 
   const handleRegistrarMovimiento = async () => {
     const descripcionInput = document.querySelector('[name="descripcionFinanciero"]');
@@ -518,31 +504,41 @@ export default function RecibeValores() {
                   <div className="flex gap-3">
                     <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Forma de Pago</span>
-                      <SelectCustom
-                        options={formaPago?.filter(c => c.sub_tipo === "EFECTIVO" || c.sub_tipo === "BANCO" || c.tipo === "BJPAGAR" || c.tipo === "LZCOBRAR").map(f => ({ value: f.id, label: f.nombre })) || []}
+                      <SelectAsync
+                        fetchUrl={`${API}/api/formaPago`}
                         value={formaPagoId}
                         onChange={setFormaPagoId}
+                        valueKey="id"
+                        labelKey="nombre"
+                        placeholder="Forma de pago"
+                        limit={200}
                       />
                     </label>
                     <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Cuenta</span>
-                      <SelectCustom
-                        options={cuentasList?.filter(c => c.sub_tipo === formaPago?.find(f => f.id === formaPagoId)?.sub_tipo).map(c => ({ value: c.id, label: c.nombre })) || []}
+                      <SelectAsync
+                        fetchUrl={`${API}/api/cuenta`}
                         value={cuentaSelect}
                         onChange={(value) => {
                           setCuentaSelect(value);
 
                           const cuenta = cuentasList?.find(c => c.id === value);
                           setMonedaCta(cuenta?.moneda || '');
-                        }} />
+                        }}
+                        valueKey="id"
+                        labelKey="nombre"
+                        placeholder="Cuenta"
+                        limit={200}
+                      />
                     </label>
                   </div>
                   <label className="flex flex-col gap-2 w-full">
                     <span className="text-gray-700 ml-2 font-medium text-sm">Entidad</span>
-                    <SelectCustom
-                      options={entidad?.map(e => ({ value: e.id, label: e.nombre })) || []}
+                    <SelectAsync
+                      fetchUrl={`${API}/api/entidad`}
                       value={entidadSelect}
                       onChange={setEntidadSelect}
+                      placeholder="Entidad"
                     />
                   </label>
                   <label className="flex flex-col gap-2 w-full">
@@ -596,33 +592,43 @@ export default function RecibeValores() {
               <form onSubmit={(e) => handleSubmitIten(e, "CRÉDITO")}>
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                   <div className="flex gap-3">
-                    <label className="flex flex-col gap-2 w-full">
+                      <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Forma de Entrada</span>
-                      <SelectCustom
-                        options={formaPago?.filter(c => c.sub_tipo === "INGRESO" || c.tipo === "BJCOBRAR" || c.tipo === "LZPAGAR" || c.tipo === "OTROS").map(f => ({ value: f.id, label: f.nombre })) || []}
+                      <SelectAsync
+                        fetchUrl={`${API}/api/formaPago`}
                         value={formaPagoId}
                         onChange={setFormaPagoId}
+                        valueKey="id"
+                        labelKey="nombre"
+                        placeholder="Seleccionar forma de entrada"
+                        limit={50}
                       />
                     </label>
                     <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Cuenta</span>
-                      <SelectCustom
-                        options={cuentasList?.filter(c => c.sub_tipo === formaPago?.find(f => f.id === formaPagoId)?.sub_tipo).map(c => ({ value: c.id, label: c.nombre })) || []}
+                      <SelectAsync
+                        fetchUrl={`${API}/api/cuenta`}
                         value={cuentaSelect}
                         onChange={(value) => {
                           setCuentaSelect(value);
 
                           const cuenta = cuentasList?.find(c => c.id === value);
                           setMonedaCta(cuenta?.moneda || '');
-                        }} />
+                        }}
+                        valueKey="id"
+                        labelKey="nombre"
+                        placeholder="Seleccionar cuenta"
+                        limit={50}
+                      />
                     </label>
                   </div>
                   <label className="flex flex-col gap-2 w-full">
                     <span className="text-gray-700 ml-2 font-medium text-sm">Entidad</span>
-                    <SelectCustom
-                      options={entidad?.map(e => ({ value: e.id, label: e.nombre })) || []}
+                    <SelectAsync
+                      fetchUrl={`${API}/api/entidad`}
                       value={entidadSelect}
                       onChange={setEntidadSelect}
+                      placeholder="Entidad"
                     />
                   </label>
                   <label className="flex flex-col gap-2 w-full">

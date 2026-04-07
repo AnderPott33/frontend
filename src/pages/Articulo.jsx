@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { FaTag } from "react-icons/fa";
 import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 import { AuthContext } from "../context/AuthContext";
@@ -71,7 +72,7 @@ const tienePermiso = puedeAcceder("articulos")
             try {
                 const token = localStorage.getItem('token');
                 const result = await axios.get(`${API}/api/categorias/`,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
                 )
                 setCategorias(result.data)
             } catch (error) {
@@ -86,7 +87,7 @@ const tienePermiso = puedeAcceder("articulos")
             try {
                 const token = localStorage.getItem('token');
                 const result = await axios.get(`${API}/api/marcas/`,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
                 )
                 setMarcas(result.data)
             } catch (error) {
@@ -103,7 +104,7 @@ const tienePermiso = puedeAcceder("articulos")
                 const token = localStorage.getItem("token");
 
                 const result = await axios.get(`${API}/api/articulo`,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
                 )
                 setArticulo(result.data);
             } catch (error) {
@@ -120,7 +121,7 @@ const tienePermiso = puedeAcceder("articulos")
                 const token = localStorage.getItem("token");
 
                 const result = await axios.get(`${API}/api/entidad`,
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    { params: { limit: 300 }, headers: { Authorization: `Bearer ${token}` } }
                 )
                 setEntidad(result.data);
             } catch (error) {
@@ -359,12 +360,14 @@ const tienePermiso = puedeAcceder("articulos")
                 </div>
             </div>
             <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 mb-2 bg-white p-4 rounded-md shadow-sm">
-                <SelectCustom
-                    options={articulo.map((a) => (
-                        { value: a.id, label: a.id + " - " + a.nombre_articulo }
-                    ))}
+                <SelectAsync
+                    fetchUrl={`${API}/api/articulo`}
                     value={articuloSelect}
                     onChange={setArticuloSelect}
+                    valueKey="id"
+                    labelKey="nombre_articulo"
+                    placeholder="Seleccionar artículo"
+                    limit={50}
                 />
             </div>
 
@@ -476,26 +479,28 @@ const tienePermiso = puedeAcceder("articulos")
                                     <div className="flex gap-3">
                                         <label className="flex flex-col w-[50%]">
                                             <span className="text-gray-700">Marca </span>
-                                            <SelectCustom
-                                                options={marcas.map((m)=>(
-                                                    {value: m.id, label: m.nombre_marca}
-                                                ))}
-                                                type="text"
-                                                value={formData.marca_id || null}
-                                                onChange={(e) => { setFormData({ ...formData, marca_id: e }) }}
-
-                                            />
+                                                <SelectAsync
+                                                    fetchUrl={`${API}/api/marcasArticulo`}
+                                                    value={formData.marca_id || null}
+                                                    onChange={(e) => { setFormData({ ...formData, marca_id: e }) }}
+                                                    valueKey="id"
+                                                    labelKey="nombre_marca"
+                                                    placeholder="Seleccionar marca"
+                                                    isClearable={true}
+                                                    limit={50}
+                                                />
                                         </label>
                                         <label className="flex flex-col w-[50%]">
                                             <span className="text-gray-700">Categoria </span>
-                                            <SelectCustom
-                                                options={categorias.map((c) => (
-                                                    { value: c.id, label: c.nombre_categoria }
-                                                ))}
-                                                type="text"
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/categoriasArticulo`}
                                                 value={formData.categoria_id || null}
                                                 onChange={(e) => { setFormData({ ...formData, categoria_id: e }) }}
-
+                                                valueKey="id"
+                                                labelKey="nombre_categoria"
+                                                placeholder="Seleccionar categoría"
+                                                isClearable={true}
+                                                limit={50}
                                             />
                                             <span className="italic text-red-500 text-xs h-4">
                                                 {obligatorio ? "*Campo Obligatório!" : " "}
@@ -544,12 +549,15 @@ const tienePermiso = puedeAcceder("articulos")
                                     <div className="flex gap-3">
                                         <label className="flex flex-col w-[50%]">
                                             <span className="text-gray-700">Proveedor</span>
-                                            <SelectCustom
-                                                options={(entidad || []).map((e) => ({ value: e.id, label: e.nombre }))}
-                                                type="text"
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/entidades`}
                                                 value={formData.proveedor_id || ""}
                                                 onChange={(e) => { setFormData({ ...formData, proveedor_id: e }) }}
-
+                                                valueKey="id"
+                                                labelKey="nombre"
+                                                placeholder="Seleccionar proveedor"
+                                                isClearable={true}
+                                                limit={50}
                                             />
                                         </label>
 

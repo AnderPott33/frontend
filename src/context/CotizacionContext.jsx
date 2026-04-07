@@ -3,6 +3,7 @@ import axios from "axios";
 import { useLocation } from "react-router-dom";
 
 const CotizacionContext = createContext();
+  const API = import.meta.env.VITE_API_URL;
 
 export const useCotizacion = () => useContext(CotizacionContext);
 
@@ -16,7 +17,7 @@ export const CotizacionProvider = ({ children }) => {
       if (!token) return;
 
       const res = await axios.get(
-        "https://owl-soft.onrender.com/api/cambio/existe-hoy",
+        `${API}/api/cambio/existe-hoy`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

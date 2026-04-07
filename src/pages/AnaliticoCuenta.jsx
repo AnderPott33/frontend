@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom"
 import Loader from "../components/Loader";
-import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 import { RiFileSearchFill } from "react-icons/ri";
@@ -32,6 +32,7 @@ const tienePermiso = puedeAcceder("analitico");
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(`${API}/api/cuenta`, {
+        params: { limit: 200 },
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data || [];
@@ -112,14 +113,14 @@ const tienePermiso = puedeAcceder("analitico");
 
           {/* Cuenta */}
           <div className="w-full">
-            <SelectCustom
-              options={cuentasList.map(c => ({
-                value: c.id,
-                label: c.nombre
-              }))}
+            <SelectAsync
+              fetchUrl={`${API}/api/cuenta`}
               value={cuentaSelect}
               onChange={setCuentaSelect}
-              className="w-full"
+              valueKey="id"
+              labelKey="nombre"
+              placeholder="Seleccionar cuenta"
+              limit={200}
             />
           </div>
 

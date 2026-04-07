@@ -6,7 +6,7 @@ import { formatearFecha, formatearFechaInput, formatearNumero } from "../compone
 import { RiBankLine } from "react-icons/ri";
 import { MdReceiptLong } from "react-icons/md";
 import { FaEdit, FaPlusSquare, FaMapMarkerAlt } from "react-icons/fa";
-import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import Swal from "sweetalert2";
 import { usePermiso } from "../hooks/usePermiso";
 import { useNavigate } from "react-router-dom";
@@ -21,12 +21,12 @@ const tienePermiso = puedeAcceder("contabilidad")
   }, [navigate, tienePermiso])
   if (!tienePermiso) return null;
     const [modalOpen, setModalOpen] = useState(false);
-    const [puntoList, setPuntoList] = useState([]);
+    // puntoList removed; use SelectAsync to fetch puntos on demand
     const [cuentaList, setCuentaList] = useState([]);
 
     const [timbradoActivo, seTimbradoActivo] = useState();
     const [timbradoList, setTimbradoList] = useState([]);
-    const [empresaList, setEmpresaList] = useState([]);
+    // empresaList removed; use SelectAsync to fetch empresas on demand
     const [dataForm, setDataForm] = useState({
         numero_timbrado: "",
         fecha_inicio: "",
@@ -83,9 +83,10 @@ const tienePermiso = puedeAcceder("contabilidad")
     const buscarTimbrados = async () => {
         try {
             const token = localStorage.getItem("token");
-            const result = await axios.get(`${API}/api/timbrados`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
+                const result = await axios.get(`${API}/api/timbrados`, {
+                    params: { limit: 200 },
+                    headers: { Authorization: `Bearer ${token}` }
+                })
             setTimbradoList(result.data);
         } catch (error) {
             console.error(error);
@@ -96,46 +97,13 @@ const tienePermiso = puedeAcceder("contabilidad")
         buscarTimbrados();
     }, [])
 
-    const buscarEmpresa = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const result = await axios.get(`${API}/api/empresa`,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-            setEmpresaList(result.data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    useEffect(() => {
-        buscarEmpresa();
-    }, [])
-
-    const fetchData = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get(`${API}/api/empresa/puntoExpedicion`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            setPuntoList(response.data);
-        } catch (error) {
-            console.error("Error fetching empresa data:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
+    // Use SelectAsync for Empresa and Punto to fetch on demand instead of preloading lists.
 
     const buscarCuenta = async () => {
         try {
             const token = localStorage.getItem("token");
             const result = await axios.get(`${API}/api/cuenta`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
             )
             setCuentaList(result.data);
 
@@ -384,38 +352,46 @@ const tienePermiso = puedeAcceder("contabilidad")
                                 <div className="flex w-full gap-3">
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Empresa</span>
-                                        <SelectCustom
-                                            options={empresaList?.map((c) => (
-                                                { value: c.id, label: c.razon_social }
-                                            ))}
+                                        <SelectAsync
+                                            fetchUrl={`${API}/api/empresa`}
                                             value={dataForm.empresa_id}
-                                            onChange={(value) => {
-                                                const empresa = empresaList.find(e => e.id === value);
-
-                                                setDataForm({
-                                                    ...dataForm,
-                                                    empresa_id: value,
-                                                    codigo_emp: empresa?.codigo_suc || ""
-                                                });
+                                            onChange={async (value) => {
+                                                setDataForm({ ...dataForm, empresa_id: value });
+                                                try {
+                                                    const token = localStorage.getItem('token');
+                                                    const res = await axios.get(`${API}/api/empresa/${value}`, { headers: { Authorization: `Bearer ${token}` } });
+                                                    const emp = res.data && res.data[0] ? res.data[0] : res.data;
+                                                    setDataForm(prev => ({ ...prev, codigo_emp: emp?.codigo_suc || '' }));
+                                                } catch (err) {
+                                                    console.error('Error fetching empresa detail', err);
+                                                }
                                             }}
+                                            valueKey="id"
+                                            labelKey="razon_social"
+                                            placeholder="Seleccionar empresa"
+                                            limit={50}
                                         />
                                     </label>
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Punto Expedición</span>
-                                        <SelectCustom
-                                            options={puntoList?.map((c) => (
-                                                { value: c.id, label: c.nombre }
-                                            ))}
+                                        <SelectAsync
+                                            fetchUrl={`${API}/api/empresa/puntoExpedicion`}
                                             value={dataForm.punto_expedicion_id}
-                                            onChange={(value) => {
-                                                const punto = puntoList.find(p => p.id === value);
-
-                                                setDataForm({
-                                                    ...dataForm,
-                                                    punto_expedicion_id: value,
-                                                    codigo_suc: punto?.codigo || ""
-                                                });
+                                            onChange={async (value) => {
+                                                setDataForm({ ...dataForm, punto_expedicion_id: value });
+                                                try {
+                                                    const token = localStorage.getItem('token');
+                                                    const res = await axios.get(`${API}/api/empresa/puntoExpedicion/${value}`, { headers: { Authorization: `Bearer ${token}` } });
+                                                    const p = res.data && res.data[0] ? res.data[0] : res.data;
+                                                    setDataForm(prev => ({ ...prev, codigo_suc: p?.codigo || '' }));
+                                                } catch (err) {
+                                                    console.error('Error fetching punto detail', err);
+                                                }
                                             }}
+                                            valueKey="id"
+                                            labelKey="nombre"
+                                            placeholder="Seleccionar punto"
+                                            limit={50}
                                         />
                                     </label>
                                     <label className="flex flex-col w-full md:w-full">

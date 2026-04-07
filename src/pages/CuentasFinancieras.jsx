@@ -55,6 +55,7 @@ const tienePermiso = puedeAcceder("cuentas")
       setLoading(true);
       const token = localStorage.getItem("token");
       const res = await axios.get(`${API}/api/cuenta`, {
+        params: { limit: 300 },
         headers: { Authorization: `Bearer ${token}` },
       });
 

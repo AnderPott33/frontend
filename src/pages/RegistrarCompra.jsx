@@ -3,6 +3,7 @@ import { GrMoney } from "react-icons/gr";
 import { FaPlus, FaTrashAlt } from "react-icons/fa";
 import { MdCleaningServices } from "react-icons/md";
 import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearNumero, formatearNumeroSimple } from "../components/FormatoFV";
 import Swal from "sweetalert2";
@@ -110,7 +111,8 @@ export default function RegistrarVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/cuenta/`,
-                { headers: { Authorization: `Bearer ${token}` } })
+                { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
+            )
             setListaCuentas(result.data);
         } catch (error) {
             console.error(error);
@@ -127,8 +129,8 @@ export default function RegistrarVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/formaPago/`,
-                { headers: { Authorization: `Bearer ${token}` } })
-            setListaFormaPago(result.data);
+                { params: { limit: 100 }, headers: { Authorization: `Bearer ${token}` } }
+            )
 
         } catch (error) {
             console.error(error);
@@ -146,7 +148,7 @@ export default function RegistrarVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/articulo`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
             )
             setArticulos(result.data);
 
@@ -619,10 +621,11 @@ export default function RegistrarVenta() {
                                 <div className="w-full md:w-full">
                                     <label className="flex flex-col w-full">
                                         <span className="text-gray-700">Proveedor</span>
-                                        <SelectCustom
-                                            options={entidad?.map(a => ({ value: a.id, label: `${a.ruc} - ${a.nombre}` })) || []}
+                                        <SelectAsync
+                                            fetchUrl={`${API}/api/entidad`}
                                             value={entidadSelect}
                                             onChange={setEntidadSelect}
+                                            placeholder="Proveedor"
                                         />
                                     </label>
                                 </div>
@@ -857,22 +860,26 @@ export default function RegistrarVenta() {
                                     <div className="flex justify-center items-center gap-3">
                                         <label className="flex flex-col w-full md:w-1/2">
                                             <span className="text-gray-700">Forma Pago</span>
-                                            <SelectCustom
-                                                options={listaFormaPago?.filter(f => f.sub_tipo === "EFECTIVO" || f.sub_tipo === "BANCO").map((a) => (
-                                                    { value: a.id, label: `${a.id} - ${a.nombre}` }
-                                                ))}
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/formaPago`}
                                                 value={formPago.forma_pago}
                                                 onChange={(f) => setFormPago({ ...formPago, forma_pago: f })}
+                                                valueKey="id"
+                                                labelKey="nombre"
+                                                placeholder="Seleccionar forma de pago"
+                                                limit={50}
                                             />
                                         </label>
                                         <label className="flex flex-col w-full md:w-1/2">
                                             <span className="text-gray-700">Cuenta</span>
-                                            <SelectCustom
-                                                options={listaCuentas?.filter(c => c.sub_tipo === listaFormaPago.find(f => f.id === formPago.forma_pago)?.sub_tipo).map((a) => (
-                                                    { value: a.id, label: `${a.id} - ${a.nombre}` }
-                                                ))}
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/cuenta`}
                                                 value={formPago.cuenta_id}
                                                 onChange={(c) => setFormPago({ ...formPago, cuenta_id: c })}
+                                                valueKey="id"
+                                                labelKey="nombre"
+                                                placeholder="Seleccionar cuenta"
+                                                limit={50}
                                             />
                                         </label>
                                         <label className="flex flex-col w-full md:w-1/4">

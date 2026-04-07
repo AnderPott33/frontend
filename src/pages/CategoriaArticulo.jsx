@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { TbTagStarred } from "react-icons/tb";
-import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearNumero, formatearNumeroSimple } from "../components/FormatoFV";
 import Swal from "sweetalert2";
@@ -33,9 +33,10 @@ const tienePermiso = puedeAcceder("categorias")
     const cargarCategorias = async () => {
         try {
             const token = localStorage.getItem('token');
-            const result = await axios.get(`${API}/api/categorias/`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+                const result = await axios.get(`${API}/api/categorias`, {
+                    params: { limit: 200 },
+                    headers: { Authorization: `Bearer ${token}` },
+                });
             setCategorias(result.data);
         } catch (error) {
             console.error(error);
@@ -232,12 +233,14 @@ const tienePermiso = puedeAcceder("categorias")
                 </div>
             </div>
             <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 mb-2 bg-white p-4 rounded-md shadow-sm">
-                <SelectCustom
-                    options={categorias.map((a) => (
-                        { value: a.id, label: a.id + " - " + a.nombre_categoria }
-                    ))}
+                <SelectAsync
+                    fetchUrl={`${API}/api/categorias`}
                     value={categoriaSelect}
                     onChange={setCategoriaSelect}
+                    valueKey="id"
+                    labelKey="nombre_categoria"
+                    placeholder="Seleccionar categoría"
+                    limit={200}
                 />
             </div>
 

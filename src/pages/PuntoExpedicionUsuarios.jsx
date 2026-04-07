@@ -5,6 +5,7 @@ import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 
 import { FaEdit, FaPlusSquare, FaMapMarkerAlt } from "react-icons/fa";
 import { FaLocationPinLock } from "react-icons/fa6";
+import SelectAsync from "../components/SelectAsync";
 import SelectCustom from "../components/SelectCustom";
 import Swal from "sweetalert2";
 import { usePermiso } from "../hooks/usePermiso";
@@ -72,41 +73,10 @@ export default function PuntoExpedicionUsuarios() {
         buscarAuthPuntos();
     }, [])
 
-    const fetchData = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const response = await axios.get(`${API}/api/empresa/puntoExpedicion`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            setPuntosList(response.data);
-        } catch (error) {
-            console.error("Error fetching empresa data:", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, []);
+    // Use SelectAsync where needed instead of preloading puntosList.
 
 
-    const buscarUsuarios = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const result = await axios.get(`${API}/api/auth/`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            setUsuariosList(result.data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    useEffect(() => {
-        buscarUsuarios();
-    }, [])
+    // Use SelectAsync for usuarios instead of precargando usuariosList.
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -209,21 +179,11 @@ export default function PuntoExpedicionUsuarios() {
     };
 
     const authFiltradas = authPuntos.filter((a) => {
-        // Filtra por usuario (string)
-        const cumpleUser = (usuarioFilter || "") === ""
-            ? true
-            : (a.usuario_nombre || "").toLowerCase().includes(usuarioFilter.toLowerCase());
-
-        // Filtra por punto (objeto {value, label})
-        const cumplePunto = !puntoFilter
-            ? true
-            : a.punto_id === puntoFilter;
-
+        // Filtra por usuario (string) y por punto
+        const cumpleUser = usuarioFilter?.toString().trim() === "" || (a.usuario_nombre || "").toLowerCase().includes((usuarioFilter || "").toLowerCase());
+        const cumplePunto = !puntoFilter || puntoFilter === "" || String(a.punto_id) === String(puntoFilter) || (a.punto_nombre || "").toLowerCase().includes(String(puntoFilter || "").toLowerCase());
         return cumpleUser && cumplePunto;
     });
-
-
-
 
     return (
         <>
@@ -353,22 +313,26 @@ export default function PuntoExpedicionUsuarios() {
                                 <div className="flex flex-col md:flex-row gap-3">
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Usuario</span>
-                                        <SelectCustom
-                                            options={usuariosList?.filter(u => u.estado === 'ACTIVO').map((u) => (
-                                                { value: u.id, label: u.nombre }
-                                            )) || []}
+                                        <SelectAsync
+                                            fetchUrl={`${API}/api/auth`}
                                             value={dataForm.usuario_id}
                                             onChange={(e) => setDataForm({ ...dataForm, usuario_id: e })}
+                                            valueKey="id"
+                                            labelKey="nombre"
+                                            placeholder="Seleccionar usuario"
+                                            limit={200}
                                         />
                                     </label>
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Punto Exp.</span>
-                                        <SelectCustom
-                                            options={puntosList?.map((p) => (
-                                                { value: p.id, label: p.nombre }
-                                            )) || []}
+                                        <SelectAsync
+                                            fetchUrl={`${API}/api/empresa/puntoExpedicion`}
                                             value={dataForm.punto_id}
                                             onChange={(e) => setDataForm({ ...dataForm, punto_id: e })}
+                                            valueKey="id"
+                                            labelKey="nombre"
+                                            placeholder="Seleccionar punto"
+                                            limit={200}
                                         />
                                     </label>
                                     <label className="flex flex-col w-full md:w-full">

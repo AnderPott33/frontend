@@ -3,6 +3,7 @@ import { GrMoney } from "react-icons/gr";
 import { FaPlus, FaTrashAlt } from "react-icons/fa";
 import { MdKeyboardReturn } from "react-icons/md";
 import SelectCustom from "../components/SelectCustom";
+import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearNumero, formatearNumeroSimple } from "../components/FormatoFV";
 import Swal from "sweetalert2";
@@ -77,6 +78,7 @@ export default function DevolucionVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/ventas/`, {
+                params: { limit: 200 },
                 headers: { Authorization: `Bearer ${token}` }
             })
             setComprasList(result.data.filter(f => f.tipo === 'VENTA'));
@@ -123,6 +125,7 @@ export default function DevolucionVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/ventas/buscarVentasYDevoluciones`, {
+                params: { limit: 500 },
                 headers: { Authorization: `Bearer ${token}` }
             })
             const mapa = {};
@@ -207,7 +210,8 @@ export default function DevolucionVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/cuenta/`,
-                { headers: { Authorization: `Bearer ${token}` } })
+                { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
+            )
             setListaCuentas(result.data);
         } catch (error) {
             console.error(error);
@@ -222,8 +226,8 @@ export default function DevolucionVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/formaPago/`,
-                { headers: { Authorization: `Bearer ${token}` } })
-            setListaFormaPago(result.data);
+                { params: { limit: 100 }, headers: { Authorization: `Bearer ${token}` } }
+            )
 
         } catch (error) {
             console.error(error);
@@ -239,7 +243,7 @@ export default function DevolucionVenta() {
         const token = localStorage.getItem("token");
         try {
             const result = await axios.get(`${API}/api/articulo`,
-                { headers: { Authorization: `Bearer ${token}` } }
+                { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
             )
             setArticulos(result.data);
 
@@ -523,22 +527,7 @@ export default function DevolucionVenta() {
     };
 
 
-    /* Buscar datos de entidades */
-    const buscarEntidad = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            const { data } = await axios.get(`${API}/api/entidad`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setEntidad(data);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    useEffect(() => {
-        buscarEntidad();
-    }, []);
+    // Entidades se cargan bajo demanda con SelectAsync para evitar payloads grandes
 
     useEffect(() => {
         if (formEncabezado.referencia_id) {
@@ -810,11 +799,12 @@ export default function DevolucionVenta() {
                                 <div className="w-full md:w-full">
                                     <label className="flex flex-col w-full">
                                         <span className="text-gray-700">Cliente</span>
-                                        <SelectCustom
-                                            options={entidad?.map(a => ({ value: a.id, label: `${a.ruc} - ${a.nombre}` })) || []}
+                                        <SelectAsync
+                                            fetchUrl={`${API}/api/entidad`}
                                             value={entidadSelect}
                                             disabled
                                             onChange={setEntidadSelect}
+                                            placeholder="Cliente"
                                         />
                                     </label>
                                 </div>
@@ -863,17 +853,14 @@ export default function DevolucionVenta() {
                                             </label>
                                             <label className="flex flex-col w-full md:w-1/3">
                                                 <span className="text-gray-700">Número Ref Id</span>
-                                                <SelectCustom
-                                                    options={comprasDisponibles.map((c) => (
-                                                        {
-                                                            value: c.id, label: `${c.timbrado} - ${c.numero_factura} - Disponible: ${formatearNumero(
-                                                                c.total_detalle - (devolucionesAnt[c.id] || 0)
-                                                            )}`
-                                                        }
-                                                    ))}
+                                                <SelectAsync
+                                                    fetchUrl={`${API}/api/ventas`}
                                                     value={formEncabezado.referencia_id || ""}
                                                     onChange={(e) => setFormEncabezado({ ...formEncabezado, referencia_id: e })}
-
+                                                    valueKey="id"
+                                                    labelKey="numero_factura"
+                                                    placeholder="Seleccionar venta"
+                                                    limit={200}
                                                 />
                                             </label>
                                         </div>
@@ -1054,22 +1041,26 @@ export default function DevolucionVenta() {
                                     <div className="flex justify-center items-center gap-3">
                                         <label className="flex flex-col w-full md:w-1/2">
                                             <span className="text-gray-700">Forma Pago</span>
-                                            <SelectCustom
-                                                options={listaFormaPago?.filter(f => f.sub_tipo === "EFECTIVO" || f.sub_tipo === "BANCO").map((a) => (
-                                                    { value: a.id, label: `${a.id} - ${a.nombre}` }
-                                                ))}
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/formaPago`}
                                                 value={formPago.forma_pago}
                                                 onChange={(f) => setFormPago({ ...formPago, forma_pago: f })}
+                                                valueKey="id"
+                                                labelKey="nombre"
+                                                placeholder="Forma de pago"
+                                                limit={200}
                                             />
                                         </label>
                                         <label className="flex flex-col w-full md:w-1/2">
                                             <span className="text-gray-700">Cuenta</span>
-                                            <SelectCustom
-                                                options={listaCuentas?.filter(c => c.sub_tipo === listaFormaPago.find(f => f.id === formPago.forma_pago)?.sub_tipo).map((a) => (
-                                                    { value: a.id, label: `${a.id} - ${a.nombre}` }
-                                                ))}
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/cuenta`}
                                                 value={formPago.cuenta_id}
                                                 onChange={(c) => setFormPago({ ...formPago, cuenta_id: c })}
+                                                valueKey="id"
+                                                labelKey="nombre"
+                                                placeholder="Cuenta"
+                                                limit={200}
                                             />
                                         </label>
                                         <label className="flex flex-col w-full md:w-1/4">
@@ -1119,23 +1110,29 @@ export default function DevolucionVenta() {
                                     <div className="flex flex-col md:flex-row gap-3 items-center">
                                         <label className="flex flex-col w-full md:w-1/3">
                                             <span className="text-gray-700">Forma Pago</span>
-                                            <SelectCustom
-                                                options={listaFormaPago?.filter(f => f.id === 7)
-                                                    .map(a => ({ value: a.id, label: `${a.id} - ${a.nombre}` }))}
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/formaPago`}
                                                 value={formPago.forma_pago}
                                                 disabled
                                                 onChange={(f) => setFormPago({ ...formPago, forma_pago: f })}
+                                                valueKey="id"
+                                                labelKey="nombre"
+                                                placeholder="Forma de pago"
+                                                limit={50}
                                             />
                                         </label>
 
                                         <label className="flex flex-col w-full md:w-1/3">
                                             <span className="text-gray-700">Cuenta</span>
-                                            <SelectCustom
-                                                options={listaCuentas?.filter(c => c.id === 9)
-                                                    .map(a => ({ value: a.id, label: `${a.id} - ${a.nombre}` }))}
+                                            <SelectAsync
+                                                fetchUrl={`${API}/api/cuenta`}
                                                 value={formPago.cuenta_id}
                                                 disabled
                                                 onChange={(c) => setFormPago({ ...formPago, cuenta_id: 9 })}
+                                                valueKey="id"
+                                                labelKey="nombre"
+                                                placeholder="Cuenta"
+                                                limit={50}
                                             />
                                         </label>
 
