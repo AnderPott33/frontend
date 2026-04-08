@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { AiOutlineFileSearch } from "react-icons/ai";
-import SelectAsync from "../components/SelectAsync";
+import SelectCustom from "../components/SelectCustom";
 import DataTable from "../components/DataTable";
 import { formatearNumero, formatearNumeroSimple, formatearFechaInput, formatearFecha } from "../components/FormatoFV";
 import { AuthContext } from "../context/AuthContext";
@@ -26,6 +26,7 @@ const tienePermiso = puedeAcceder("venta")
     );
     const timbrado = timbradosSelect?.numero_timbrado || "";
 
+    const [ventas, setVentas] = useState([]);
     const [ventaSelect, setVentaSelect] = useState(null);
 
     const [formEncabezado, setFormEncabezado] = useState({
@@ -76,7 +77,22 @@ const tienePermiso = puedeAcceder("venta")
         }
     }, [])
 
-    // Not preloading all ventas to avoid heavy payloads; use SelectAsync on demand.
+    const buscarVentas = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const { data } = await axios.get(`${API}/api/ventas`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setVentas(data);
+        } catch (error) {
+            console.error(error);
+            Swal.fire("Error", "No se pudieron cargar las ventas", "error");
+        }
+    };
+
+    useEffect(() => {
+        buscarVentas();
+    }, []);
 
     // Cuando se selecciona una venta
     useEffect(() => {
@@ -157,8 +173,8 @@ const tienePermiso = puedeAcceder("venta")
                     timer: 2000,
                     showConfirmButton: false
                 });
-                // Limpia selección (SelectAsync pedirá datos cuando el usuario busque de nuevo)
-                setVentaSelect(null);
+                // Recarga las ventas y limpia selección si quieres
+                buscarVentas();
             } else {
                 Swal.fire('Error', res.data.mensaje, 'error');
             }
@@ -233,15 +249,14 @@ const totalGeneral = itemsLista.reduce(
             </div>
 
             <div className="flex flex-col md:flex-row items-center justify-center gap-4 mb-2 bg-white p-4 rounded-md shadow-sm">
-                <div className="w-full">
-                    <SelectAsync
-                        fetchUrl={`${API}/api/ventas`}
+                <div className="w-full hidden">
+                    <SelectCustom
+                        options={ventas.map(v => ({
+                            value: v.id,
+                            label: `ID: ${v.id} -> ${v.tipo}: ${v.numero_factura} - ${v.entidad_nombre} (${formatearFecha(v.fecha)}) ${formatearNumero(v.total_detalle || 0)}`,
+                        }))}
                         value={ventaSelect}
                         onChange={setVentaSelect}
-                        valueKey="id"
-                        labelKey="numero_factura"
-                        placeholder="Buscar venta por Nº factura"
-                        limit={50}
                     />
                 </div>
                 <div className="flex flex-wrap md:flex-nowrap gap-4 mb-4 px-6">

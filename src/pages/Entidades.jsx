@@ -96,7 +96,6 @@ const tienePermiso = puedeAcceder("entidades")
       setLoading(true);
       const token = localStorage.getItem("token");
       const res = await axios.get(`${API}/api/entidades`, {
-        params: { limit: 300 },
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -1,6 +1,5 @@
 import { useState, useContext, useEffect } from "react";
 import SelectCustom from "../components/SelectCustom";
-import SelectAsync from "../components/SelectAsync";
 import { AuthContext } from "../context/AuthContext";
 import DataTable from "../components/DataTable";
 import { FaPlusSquare, FaCheckCircle, FaMinusSquare } from "react-icons/fa";
@@ -63,8 +62,7 @@ export default function PagaValores() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(`${API}/api/formaPago`, {
-        params: { limit: 100 },
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       return res.data || [];
     } catch (error) {
@@ -222,7 +220,22 @@ export default function PagaValores() {
   /* Boton para eliminar linea */
   const handleEliminar = (id) => setItemsDetalle(itemsDetalle.filter(item => item.id !== id));
 
-  // Ahora usamos SelectAsync en los modales para cargar entidades bajo demanda
+  /* Busca las entidades para el select de los modales */
+  const buscarEntidad = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API}/api/entidad`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEntidad(res.data || []);
+    } catch (error) {
+      console.error("No se pudo obtener entidades: ", error);
+    }
+  };
+
+  useEffect(() => {
+    buscarEntidad();
+  }, []);
 
   const handleRegistrarMovimiento = async () => {
     const descripcionInput = document.querySelector('[name="descripcionFinanciero"]');
@@ -516,41 +529,31 @@ export default function PagaValores() {
                   <div className="flex gap-3">
                     <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Forma de Pago</span>
-                      <SelectAsync
-                        fetchUrl={`${API}/api/formaPago`}
+                      <SelectCustom
+                        options={formaPago?.filter(c => c.sub_tipo === "EFECTIVO" || c.sub_tipo === "BANCO" || c.tipo === "BJCOBRAR" || c.tipo === "LZPAGAR").map(f => ({ value: f.id, label: f.nombre })) || []}
                         value={formaPagoId}
                         onChange={setFormaPagoId}
-                        valueKey="id"
-                        labelKey="nombre"
-                        placeholder="Forma de pago"
-                        limit={200}
                       />
                     </label>
                     <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Cuenta</span>
-                      <SelectAsync
-                        fetchUrl={`${API}/api/cuenta`}
+                      <SelectCustom
+                        options={cuentasList?.filter(c => c.sub_tipo === formaPago?.find(f => f.id === formaPagoId)?.sub_tipo).map(c => ({ value: c.id, label: c.nombre })) || []}
                         value={cuentaSelect}
                         onChange={(value) => {
                           setCuentaSelect(value);
 
-                          const cuenta = listaCuentas?.find(c => c.id === value) || cuentasList?.find(c => c.id === value);
+                          const cuenta = cuentasList?.find(c => c.id === value);
                           setMonedaCta(cuenta?.moneda || '');
-                        }}
-                        valueKey="id"
-                        labelKey="nombre"
-                        placeholder="Cuenta"
-                        limit={200}
-                      />
+                        }} />
                     </label>
                   </div>
                   <label className="flex flex-col gap-2 w-full">
                     <span className="text-gray-700 ml-2 font-medium text-sm">Entidad</span>
-                    <SelectAsync
-                      fetchUrl={`${API}/api/entidad`}
+                    <SelectCustom
+                      options={entidad?.map(e => ({ value: e.id, label: e.nombre })) || []}
                       value={entidadSelect}
                       onChange={setEntidadSelect}
-                      placeholder="Entidad"
                     />
                   </label>
                   <label className="flex flex-col gap-2 w-full">
@@ -606,42 +609,32 @@ export default function PagaValores() {
                   <div className="flex gap-3">
                     <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Forma de Salída</span>
-                      <SelectAsync
-                        fetchUrl={`${API}/api/formaPago`}
+                      <SelectCustom
+                        options={formaPago?.filter(c => c.sub_tipo === "GASTO" || c.tipo === "LZCOBRAR" || c.tipo === "BJPAGAR" || c.tipo === "OTROS").map(f => ({ value: f.id, label: f.nombre })) || []}
                         value={formaPagoId}
                         onChange={setFormaPagoId}
-                        valueKey="id"
-                        labelKey="nombre"
-                        placeholder="Forma de salida"
-                        limit={200}
                       />
                     </label>
                     <label className="flex flex-col gap-2 w-full">
                       <span className="text-gray-700 ml-2 font-medium text-sm">Cuenta</span>
-                      <SelectAsync
-                        fetchUrl={`${API}/api/cuenta`}
+                      <SelectCustom
+                        options={cuentasList?.filter(c => c.sub_tipo === formaPago?.find(f => f.id === formaPagoId)?.sub_tipo).map(c => ({ value: c.id, label: c.nombre })) || []}
                         value={cuentaSelect}
                         onChange={(value) => {
                           setCuentaSelect(value);
 
                           const cuenta = cuentasList?.find(c => c.id === value);
                           setMonedaCta(cuenta?.moneda || '');
-                        }}
-                        valueKey="id"
-                        labelKey="nombre"
-                        placeholder="Cuenta"
-                        limit={200}
-                      />
+                        }} />
                     </label>
                   </div>
                   <label className="flex flex-col gap-2 w-full">
-                      <span className="text-gray-700 ml-2 font-medium text-sm">Entidad</span>
-                      <SelectAsync
-                        fetchUrl={`${API}/api/entidad`}
-                        value={entidadSelect}
-                        onChange={setEntidadSelect}
-                        placeholder="Entidad"
-                      />
+                    <span className="text-gray-700 ml-2 font-medium text-sm">Entidad</span>
+                    <SelectCustom
+                      options={entidad?.map(e => ({ value: e.id, label: e.nombre })) || []}
+                      value={entidadSelect}
+                      onChange={setEntidadSelect}
+                    />
                   </label>
                   <label className="flex flex-col gap-2 w-full">
                     <span className="text-gray-700 ml-2 font-medium text-sm">Monto</span>

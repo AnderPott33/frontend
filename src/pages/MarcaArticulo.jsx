@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaCertificate } from "react-icons/fa";
 import SelectCustom from "../components/SelectCustom";
-import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearNumero, formatearNumeroSimple } from "../components/FormatoFV";
 import Swal from "sweetalert2";
@@ -34,10 +33,9 @@ const tienePermiso = puedeAcceder("marcas")
     const cargarmarcas = async () => {
         try {
             const token = localStorage.getItem('token');
-                const result = await axios.get(`${API}/api/marcas`, {
-                    params: { limit: 200 },
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+            const result = await axios.get(`${API}/api/marcas/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setMarcas(result.data);
         } catch (error) {
             console.error(error);
@@ -234,14 +232,12 @@ const tienePermiso = puedeAcceder("marcas")
                 </div>
             </div>
             <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 mb-2 bg-white p-4 rounded-md shadow-sm">
-                <SelectAsync
-                    fetchUrl={`${API}/api/marcas`}
+                <SelectCustom
+                    options={marcas.map((a) => (
+                        { value: a.id, label: a.id + " - " + a.nombre_marca }
+                    ))}
                     value={marcaselect}
                     onChange={setMarcaselect}
-                    valueKey="id"
-                    labelKey="nombre_marca"
-                    placeholder="Seleccionar marca"
-                    limit={200}
                 />
             </div>
 

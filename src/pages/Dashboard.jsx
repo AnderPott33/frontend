@@ -39,21 +39,17 @@ export default function Dashboard({ columns }) {
       try {
         const token = localStorage.getItem("token");
 
-        // Ejecutar llamadas en paralelo para reducir tiempo total de espera
-        const requests = [
-          axios.get(`${API}/api/auth/puntos/usuario/${usuario.id}`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.post(`${API}/api/cuenta/saldos`, {}, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API}/api/auth`, { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get(`${API}/api/movimientos`, { params: { limit: 50 }, headers: { Authorization: `Bearer ${token}` } }),
-          axios.post(`${API}/api/cuenta/saldosCobrarPagar`, {}, { headers: { Authorization: `Bearer ${token}` } })
-        ];
+        // --- PUNTOS DEL USUARIO ---
+        const puntosRes = await axios.get(`${API}/api/auth/puntos/usuario/${usuario.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPuntosUsuario(puntosRes.data || []);
 
-        const [puntosRes, cuentasRes, usuariosRes, movimientosRes, aPagarCobrarRes] = await Promise.allSettled(requests);
-
-        const puntos = puntosRes.status === 'fulfilled' ? puntosRes.value.data || [] : [];
-        setPuntosUsuario(puntos);
-
-        const cuentas = cuentasRes.status === 'fulfilled' ? (Array.isArray(cuentasRes.value.data) ? cuentasRes.value.data : []) : [];
+        // --- CUENTAS ---
+        const cuentasRes = await axios.post(`${API}/api/cuenta/saldos`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const cuentas = Array.isArray(cuentasRes.data) ? cuentasRes.data : [];
         let saldoPYG = 0, saldoUSD = 0, saldoBRL = 0;
         cuentas.forEach(c => {
           const monto = Number(c.saldo_cuenta || 0);
@@ -64,22 +60,35 @@ export default function Dashboard({ columns }) {
           }
         });
 
-        const usuarios = usuariosRes.status === 'fulfilled' ? (Array.isArray(usuariosRes.value.data) ? usuariosRes.value.data : []) : [];
+        // --- USUARIOS ---
+        const usuariosRes = await axios.get(`${API}/api/auth`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const usuarios = Array.isArray(usuariosRes.data) ? usuariosRes.data : [];
         const usuariosActivos = usuarios.filter(u => u.estado === "ACTIVO");
 
-        const movimientos = movimientosRes.status === 'fulfilled' ? (Array.isArray(movimientosRes.value.data.movimientos) ? movimientosRes.value.data.movimientos : []) : [];
+        // --- MOVIMIENTOS ---
+        const movimientosRes = await axios.get(`${API}/api/movimientos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const movimientos = Array.isArray(movimientosRes.data.movimientos) ? movimientosRes.data.movimientos : [];
         movimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-        const aCobrarPagar = aPagarCobrarRes.status === 'fulfilled' ? (Array.isArray(aPagarCobrarRes.value.data) ? aPagarCobrarRes.value.data : []) : [];
+        // --- A COBRAR / A PAGAR ---
+        const aPagarCobrarRes = await axios.post(`${API}/api/cuenta/saldosCobrarPagar`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const aCobrarPagar = Array.isArray(aPagarCobrarRes.data) ? aPagarCobrarRes.data : [];
         let totalCobrar = 0, totalPagar = 0;
         aCobrarPagar.forEach(m => {
           if (m.naturaleza === "DEUDORA") totalCobrar += Number(m.saldo_cuenta || 0);
           if (m.naturaleza === "ACREDORA") totalPagar += Number(m.saldo_cuenta || 0);
         });
 
+        // --- INGRESOS Y GASTOS ---
         let totalIngreso = 0, totalGasto = 0;
         movimientos.forEach(m => {
-          if (m.tipo_operacion === "INGRESO" || m.tipo_operacion === "VENTA") totalIngreso += Number(m.total_monto || 0);
+          if (m.tipo_operacion === "INGRESO" || m.tipo_operacion === "VENTA")   totalIngreso += Number(m.total_monto || 0);
           if (m.tipo_operacion === "GASTO" || m.tipo_operacion === "COMPRA") totalGasto += Number(m.total_monto || 0);
         });
         totalIngreso -= totalCobrar;

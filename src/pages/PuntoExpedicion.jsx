@@ -4,7 +4,7 @@ import DataTable from "../components/DataTable";
 import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 
 import { FaEdit, FaPlusSquare, FaMapMarkerAlt } from "react-icons/fa";
-import SelectAsync from "../components/SelectAsync";
+import SelectCustom from "../components/SelectCustom";
 import Swal from "sweetalert2";
 import { usePermiso } from "../hooks/usePermiso";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,7 @@ const tienePermiso = puedeAcceder("contabilidad")
     const [timbradoList, setTimbradoList] = useState([]);
 
     const [empresaActiva, setEmpresaActiva] = useState();
+    const [empresaList, setEmpresaList] = useState([]);
     const [dataForm, setDataForm] = useState({
         empresa_id: "",
         nombre: "",
@@ -81,7 +82,21 @@ const tienePermiso = puedeAcceder("contabilidad")
     }, [])
 
 
-    // Nota: `empresa` se carga desde `fetchData` y para búsquedas puntuales usamos SelectAsync
+    const buscarEmpresa = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const result = await axios.get(`${API}/api/empresa`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setEmpresaList(result.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    useEffect(() => {
+        buscarEmpresa();
+    }, [])
 
     const fetchData = async () => {
         try {
@@ -105,9 +120,9 @@ const tienePermiso = puedeAcceder("contabilidad")
     const buscarCuenta = async () => {
         try {
             const token = localStorage.getItem("token");
-                const result = await axios.get(`${API}/api/cuenta`,
-                    { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
-                )
+            const result = await axios.get(`${API}/api/cuenta`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            )
             setCuentaList(result.data);
 
         } catch (error) {
@@ -328,28 +343,23 @@ const tienePermiso = puedeAcceder("contabilidad")
                                 </div>
                                 <div className="flex w-full gap-3">
                                     <label className="flex flex-col w-full md:w-full">
-                                            <span className="text-gray-700">Empresa</span>
-                                            <SelectAsync
-                                                fetchUrl={`${API}/api/empresa`}
-                                                value={dataForm.empresa_id}
-                                                onChange={(e) => setDataForm({ ...dataForm, empresa_id: e })}
-                                                valueKey="id"
-                                                labelKey="razon_social"
-                                                placeholder="Seleccionar empresa"
-                                                isClearable={true}
-                                                limit={50}
-                                            />
-                                        </label>
+                                        <span className="text-gray-700">Empresa</span>
+                                        <SelectCustom
+                                            options={empresaList?.map((c) => (
+                                                { value: c.id, label: c.razon_social }
+                                            ))}
+                                            value={dataForm.empresa_id}
+                                            onChange={(e) => setDataForm({ ...dataForm, empresa_id: e })}
+                                        />
+                                    </label>
                                     <label className="flex hidden flex-col w-full md:w-full">
                                         <span className="text-gray-700">Timbrado</span>
-                                        <SelectAsync
-                                            fetchUrl={`${API}/api/timbrados`}
+                                        <SelectCustom
+                                            options={timbradoList.filter(t => t.estado === 'ACTIVO').map((c) => (
+                                                { value: c.numero_timbrado, label: `${c.codigo_emp}-${c.codigo_suc}: ${c.numero_timbrado}` }
+                                            ))}
                                             value={dataForm.timbrado}
                                             onChange={(e) => setDataForm({ ...dataForm, timbrado: e })}
-                                            valueKey="numero_timbrado"
-                                            labelKey="numero_timbrado"
-                                            placeholder="Seleccionar timbrado"
-                                            limit={50}
                                         />
                                     </label>
                                 </div>

@@ -5,7 +5,6 @@ import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 import { RiBankLine } from "react-icons/ri";
 import { FaEdit, FaPlusSquare } from "react-icons/fa";
 import SelectCustom from "../components/SelectCustom";
-import SelectAsync from "../components/SelectAsync";
 import Swal from "sweetalert2";
 import { usePermiso } from "../hooks/usePermiso";
 import { useNavigate } from "react-router-dom";
@@ -94,7 +93,7 @@ const tienePermiso = puedeAcceder("contabilidad")
         try {
             const token = localStorage.getItem("token");
             const result = await axios.get(`${API}/api/cuenta`,
-                { params: { limit: 200 }, headers: { Authorization: `Bearer ${token}` } }
+                { headers: { Authorization: `Bearer ${token}` } }
             )
             setCuentaList(result.data);
 
@@ -358,40 +357,44 @@ const tienePermiso = puedeAcceder("contabilidad")
                                 <div className="flex w-full gap-3">
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Cuenta Ingreso Venta</span>
-                                        <SelectAsync
-                                            fetchUrl={`${API}/api/cuenta`}
+                                        <SelectCustom
+                                            options={cuentaList.map((c) => (
+                                                { value: c.id, label: c.nombre }
+                                            ))}
                                             value={dataForm.cuenta_ingreso_venta}
                                             onChange={(e) => setDataForm({ ...dataForm, cuenta_ingreso_venta: e })}
-                                            placeholder="Cuenta Ingreso Venta"
                                         />
                                     </label>
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Cuenta Gasto Compra</span>
-                                        <SelectAsync
-                                            fetchUrl={`${API}/api/cuenta`}
+                                        <SelectCustom
+                                            options={cuentaList.map((c) => (
+                                                { value: c.id, label: c.nombre }
+                                            ))}
                                             value={dataForm.cuenta_gasto_compra}
                                             onChange={(e) => setDataForm({ ...dataForm, cuenta_gasto_compra: e })}
-                                            placeholder="Cuenta Gasto Compra"
                                         />
                                     </label>
                                 </div>
                                 <div className="flex w-full gap-3">
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Cuenta IVA Crédito "Venta"</span>
-                                        <SelectAsync
-                                            fetchUrl={`${API}/api/cuenta`}
+                                        <SelectCustom
+                                            options={cuentaList.map((c) => (
+                                                { value: c.id, label: c.nombre }
+                                            ))}
                                             value={dataForm.cuenta_iva_credito}
                                             onChange={(e) => setDataForm({ ...dataForm, cuenta_iva_credito: e })}
-                                            placeholder="Cuenta IVA Crédito"
                                         />
                                     </label>
                                     <label className="flex flex-col w-full md:w-full">
                                         <span className="text-gray-700">Cuenta IVA Débito "Compra"</span>
-                                        <SelectAsync
-                                            fetchUrl={`${API}/api/cuenta`}
+                                        <SelectCustom
+                                            options={cuentaList.map((c) => (
+                                                { value: c.id, label: c.nombre }
+                                            ))}
                                             value={dataForm.cuenta_iva_debito}
                                             onChange={(e) => setDataForm({ ...dataForm, cuenta_iva_debito: e })}
-                                            placeholder="Cuenta IVA Débito"
                                         />
                                     </label>
                                 </div>

@@ -125,15 +125,11 @@ const tienePermiso = puedeAcceder("saldos_cobrar_pagar")
 
           {/* ENTIDAD */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full">
-              <div className="w-full h-[52px]">
-              <SelectAsync
-                fetchUrl={`${API}/api/entidad`}
+            <div className="w-full h-[52px]">
+              <SelectCustom
+                options={entidadesList.map(e => ({ value: e.id, label: e.nombre }))}
                 value={entidadSelect}
                 onChange={(option) => setEntidadSelect(option)}
-                valueKey="id"
-                labelKey="nombre"
-                placeholder="Seleccionar entidad"
-                limit={50}
               />
             </div>
 

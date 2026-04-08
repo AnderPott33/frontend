@@ -120,7 +120,6 @@ const tienePermiso = puedeAcceder("movimientos_financieros")
             const token = localStorage.getItem("token");
 
             const res = await axios.get(`${API}/api/movimientos/`, {
-                params: { limit: 500 },
                 headers: { Authorization: `Bearer ${token}` },
             });
 

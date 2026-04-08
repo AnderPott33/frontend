@@ -1,7 +1,6 @@
 import axios from 'axios';
-const API = import.meta.env.VITE_API_URL;
 
-const API_URL = API;
+const API_URL = 'https://owl-soft.onrender.com/api/auth';
 
 export const fetchUsuarios = async (token) => {
   const res = await axios.get(`${API_URL}/`, {

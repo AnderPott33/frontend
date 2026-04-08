@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
 import SelectCustom from "../components/SelectCustom";
-import SelectAsync from "../components/SelectAsync";
 import DataTable from "../components/DataTable";
 import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 import { RiFileSearchFill } from "react-icons/ri";
@@ -23,7 +22,6 @@ export default function AnaliticoCuenta() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get("http://localhost:5000/api/cuenta", {
-        params: { limit: 200 },
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data || [];
@@ -103,14 +101,13 @@ export default function AnaliticoCuenta() {
         <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-start md:items-center">
           <div className="w-full md:w-80 h-[52px]">
             {/* Selección de cuenta */}
-            <SelectAsync
-              fetchUrl={`${API}/api/cuenta`}
+            <SelectCustom
+              options={cuentasList.map(c => ({
+                value: c.id,
+                label: c.nombre
+              }))}
               value={cuentaSelect}
               onChange={setCuentaSelect}
-              valueKey="id"
-              labelKey="nombre"
-              placeholder="Seleccionar cuenta"
-              limit={200}
             />
           </div>
           {/* Fecha inicio */}

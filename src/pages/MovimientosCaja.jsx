@@ -41,8 +41,7 @@ const tienePermiso = puedeAcceder("movimientos_caja")
         try {
             const token = localStorage.getItem("token");
             const res = await axios.get(`${API}/api/formaPago`, {
-                params: { limit: 100 },
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}` }
             });
             return res.data || [];
         } catch (error) {

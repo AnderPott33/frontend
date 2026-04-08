@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../components/Loader";
-import SelectAsync from "../components/SelectAsync";
+import SelectCustom from "../components/SelectCustom";
 import DataTable from "../components/DataTable";
 import { formatearFecha, formatearNumero } from "../components/FormatoFV";
 import { RiFileSearchFill } from "react-icons/ri";
@@ -35,7 +35,6 @@ const tienePermiso = puedeAcceder("analitico_cta_cobrar_pagar");
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(`${API}/api/cuenta/`, {
-        params: { limit: 300 },
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data || [];
@@ -52,7 +51,6 @@ const tienePermiso = puedeAcceder("analitico_cta_cobrar_pagar");
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(`${API}/api/entidad/`, {
-        params: { limit: 300 },
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data || [];
@@ -133,25 +131,17 @@ const tienePermiso = puedeAcceder("analitico_cta_cobrar_pagar");
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
           <div className="w-full h-[52px]">
-            <SelectAsync
-              fetchUrl={`${API}/api/cuenta`}
+            <SelectCustom
+              options={cuentasList.map(c => ({ value: c.id, label: c.nombre }))}
               value={cuentaSelect}
               onChange={(option) => setCuentaSelect(option)}
-              valueKey="id"
-              labelKey="nombre"
-              placeholder="Seleccionar cuenta"
-              limit={200}
             />
           </div>
           <div className="w-full h-[52px]">
-            <SelectAsync
-              fetchUrl={`${API}/api/entidad`}
+            <SelectCustom
+              options={entidadesList.map(e => ({ value: e.id, label: e.nombre }))}
               value={entidadSelect}
               onChange={(option) => setEntidadSelect(option)}
-              valueKey="id"
-              labelKey="nombre"
-              placeholder="Seleccionar entidad"
-              limit={200}
             />
           </div>
           <input

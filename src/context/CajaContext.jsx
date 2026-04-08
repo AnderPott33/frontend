@@ -4,10 +4,11 @@ import axios from "axios";
 const CajaContext = createContext();
 
 export function CajaProvider({ children }) {
-      const API = import.meta.env.VITE_API_URL;
     const [caja, setCaja] = useState(null);
     const [loading, setLoading] = useState(false);
     const [token, setToken] = useState(localStorage.getItem("token"));
+
+    const API = "https://owl-soft.onrender.com";
 
     const obtenerCaja = async (customToken) => {
         const tokenToUse = customToken || token;
