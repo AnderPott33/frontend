@@ -297,8 +297,8 @@ const tienePermiso = puedeAcceder("movimientos_financieros")
                                 cell: (row) => (
                                     <span
                                         className={`px-3 py-1 rounded-full text-xs font-medium
-                      ${row.estado === "ACTIVO" && "bg-green-100 text-green-700"}
-                      ${row.estado === "INACTIVO" && "bg-red-100 text-red-700"}`}
+                                        ${row.estado === "ACTIVO" && "bg-green-100 text-green-700"}
+                                        ${row.estado === "INACTIVO" && "bg-red-100 text-red-700"}`}
                                     >
                                         {row.estado}
                                     </span>
@@ -315,7 +315,7 @@ const tienePermiso = puedeAcceder("movimientos_financieros")
                                             row.total_monto > 0 ? "text-blue-500 font-bold" : "text-red-500"
                                         }
                                     >
-                                        {formatearNumero(row.total_monto, row.moneda)}
+                                        {formatearNumero(row.total_monto, row.moneda_principal)}
                                     </span>
                                 ),
                             },
@@ -457,7 +457,7 @@ const tienePermiso = puedeAcceder("movimientos_financieros")
                                                     <td className="px-4 py-2">{d.documento || "-"}</td>
                                                     <td className="px-4 py-2">{d.entidad || "-"}</td>
                                                     <td className="px-4 py-2">{d.descripcion || "-"}</td>
-                                                    <td className="px-4 py-2 text-center">{d.moneda}</td>
+                                                    <td className="px-4 py-2 text-center">{movimiento.moneda_principal}</td>
                                                     <td className="px-4 py-2 text-right">
                                                         {d.cambio != null && d.cambio !== ""
                                                             ? Number(d.cambio).toFixed(6)
@@ -465,10 +465,10 @@ const tienePermiso = puedeAcceder("movimientos_financieros")
                                                     </td>
                                                     {/* Débito / Crédito */}
                                                     <td className="px-4 py-2 text-right font-semibold text-green-600">
-                                                        {d.tipo === "DÉBITO" ? formatearNumero(d.monto, d.moneda_principal) : "-"}
+                                                        {d.tipo === "DÉBITO" ? formatearNumero(d.monto, movimiento.moneda_principal) : "-"}
                                                     </td>
                                                     <td className="px-4 py-2 text-right font-semibold text-red-600">
-                                                        {d.tipo === "CRÉDITO" ? formatearNumero(d.monto, d.moneda_principal) : "-"}
+                                                        {d.tipo === "CRÉDITO" ? formatearNumero(d.monto, movimiento.moneda_principal) : "-"}
                                                     </td>
                                                     <td className="px-4 py-2 text-right">{formatearNumero(d.monto_moneda_cuenta, d.moneda)}</td>
                                                 </tr>
