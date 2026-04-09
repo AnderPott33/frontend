@@ -552,6 +552,7 @@ export default function DevolucionVenta() {
 
                     const { encabezado, detalle, pagos } = result.data;
 
+
                     // ✅ 1. Completar encabezado
                     setFormEncabezado(prev => ({
                         ...prev,

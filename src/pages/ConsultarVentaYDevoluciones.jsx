@@ -1,3 +1,4 @@
+import imprimirFactura from '../impresion/ImpresionFactura'
 import { useState, useEffect, useContext } from "react";
 import { AiOutlineFileSearch } from "react-icons/ai";
 import SelectCustom from "../components/SelectCustom";
@@ -14,13 +15,14 @@ import { useNavigate } from "react-router-dom";
 export default function ConsultarVentaYDevoluciones() {
     const API = import.meta.env.VITE_API_URL;
     const navigate = useNavigate()
-    const {puedeAcceder, puede} = usePermiso();
-const tienePermiso = puedeAcceder("venta")
+    const { puedeAcceder, puede } = usePermiso();
+    const tienePermiso = puedeAcceder("venta")
     useEffect(() => {
-            if (!tienePermiso) {navigate("/error-permiso");}
-  }, [navigate, tienePermiso])
-  if (!tienePermiso) return null;
+        if (!tienePermiso) { navigate("/error-permiso"); }
+    }, [navigate, tienePermiso])
+    if (!tienePermiso) return null;
     const { usuario, puntoSeleccionado } = useContext(AuthContext);
+    const [datosVentaImprimir, setDatosVentaImprimir] = useState([])
     const timbradosSelect = puntoSeleccionado?.timbrados?.find(
         t => t.tipo_documento === "NOTA CRÉDITO"
     );
@@ -103,6 +105,7 @@ const tienePermiso = puedeAcceder("venta")
                     const { data } = await axios.get(`${API}/api/ventas/${ventaSelect}`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
+                    setDatosVentaImprimir(data);
 
                     setFormEncabezado({
                         tipo: data.encabezado.tipo || '',
@@ -185,20 +188,20 @@ const tienePermiso = puedeAcceder("venta")
         }
     };
 
-const totalIVA5 = itemsLista.reduce(
-  (acc, item) => acc + (item.impuesto_por === "5%" ? Number(item.impuesto || 0) : 0),
-  0
-);
+    const totalIVA5 = itemsLista.reduce(
+        (acc, item) => acc + (item.impuesto_por === "5%" ? Number(item.impuesto || 0) : 0),
+        0
+    );
 
-const totalIVA10 = itemsLista.reduce(
-  (acc, item) => acc + (item.impuesto_por === "10%" ? Number(item.impuesto || 0) : 0),
-  0
-);
+    const totalIVA10 = itemsLista.reduce(
+        (acc, item) => acc + (item.impuesto_por === "10%" ? Number(item.impuesto || 0) : 0),
+        0
+    );
 
-const totalGeneral = itemsLista.reduce(
-  (acc, item) => acc + Number(item.total || 0),
-  0
-);
+    const totalGeneral = itemsLista.reduce(
+        (acc, item) => acc + Number(item.total || 0),
+        0
+    );
 
     const eliminarDetalle = (id_unico) => setItemsLista(prev => prev.filter(item => item.id_unico !== id_unico));
     const eliminarDetallePago = (id_unico) => setItemsPago(prev => prev.filter(item => item.id_unico !== id_unico));
@@ -208,7 +211,7 @@ const totalGeneral = itemsLista.reduce(
     const activaPagoVenta = () => { setPagoVenta("active"); setRegistro(""); setMovimientos(""); };
 
 
-    const imprimirPDF = async (idVenta, tipo) => {
+    /* const imprimirPDF = async (idVenta, tipo) => {
         try {
             const token = localStorage.getItem("token");
 
@@ -218,7 +221,9 @@ const totalGeneral = itemsLista.reduce(
                     headers: { Authorization: `Bearer ${token}` },
                     responseType: "blob", // importante para PDF
                 }
+
             );
+
 
             const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
             window.open(url); // abre en nueva ventana para imprimir
@@ -226,7 +231,23 @@ const totalGeneral = itemsLista.reduce(
             console.error(err);
             alert("No se pudo generar el PDF");
         }
+    }; */
+    const factura = {
+        datosVentaImprimir,
+        totales: {
+            totalGeneral,
+            totalIVA10,
+            totalIVA5,
+            totalIVA: totalIVA10 + totalIVA5,
+            subTotal: totalGeneral - (totalIVA10 + totalIVA5)
+        }
     };
+
+    const {pagos} = factura.datosVentaImprimir
+    console.log(pagos);
+
+    /* console.log(factura.detalle[0].producto_nombre); */
+
     return (
         <div>
             <div className="mb-2">
@@ -261,9 +282,10 @@ const totalGeneral = itemsLista.reduce(
                 </div>
                 <div className="flex flex-wrap md:flex-nowrap gap-4 mb-4 px-6">
                     <button
-                        className="w-full md:w-40 p-2 rounded-md bg-blue-500 text-white font-semibold shadow hover:bg-blue-600"
-                        onClick={() => imprimirPDF(ventaSelect, "factura")}
+                        onClick={() => imprimirFactura(factura)}
+                        className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md"
                     >
+
                         Imprimir Factura
                     </button>
 
