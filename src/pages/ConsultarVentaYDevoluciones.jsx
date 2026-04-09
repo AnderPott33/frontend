@@ -136,7 +136,7 @@ export default function ConsultarVentaYDevoluciones() {
         }
     }, [ventaSelect]);
 
-    const handleDevolucion = async () => {
+ /*    const handleDevolucion = async () => {
         if (!ventaSelect || !timbrado) {
             Swal.fire("Error", "Primero selecciona una venta", "error");
             return;
@@ -186,7 +186,7 @@ export default function ConsultarVentaYDevoluciones() {
             console.error(err);
             Swal.fire('Error', 'Error al procesar la devolución', 'error');
         }
-    };
+    }; */
 
     const totalIVA5 = itemsLista.reduce(
         (acc, item) => acc + (item.impuesto_por === "5%" ? Number(item.impuesto || 0) : 0),
@@ -203,35 +203,12 @@ export default function ConsultarVentaYDevoluciones() {
         0
     );
 
-    const eliminarDetalle = (id_unico) => setItemsLista(prev => prev.filter(item => item.id_unico !== id_unico));
-    const eliminarDetallePago = (id_unico) => setItemsPago(prev => prev.filter(item => item.id_unico !== id_unico));
-
     const activaRegistro = () => { setRegistro("active"); setMovimientos(""); setPagoVenta(""); };
     const activaMovimientos = () => { setMovimientos("active"); setRegistro(""); setPagoVenta(""); };
     const activaPagoVenta = () => { setPagoVenta("active"); setRegistro(""); setMovimientos(""); };
 
 
-    /* const imprimirPDF = async (idVenta, tipo) => {
-        try {
-            const token = localStorage.getItem("token");
-
-            const response = await axios.get(
-                `${API}/api/ventas/imprimir/${tipo}/${idVenta}`,
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                    responseType: "blob", // importante para PDF
-                }
-
-            );
-
-
-            const url = window.URL.createObjectURL(new Blob([response.data], { type: "application/pdf" }));
-            window.open(url); // abre en nueva ventana para imprimir
-        } catch (err) {
-            console.error(err);
-            alert("No se pudo generar el PDF");
-        }
-    }; */
+  
     const factura = {
         datosVentaImprimir,
         totales: {
@@ -242,11 +219,6 @@ export default function ConsultarVentaYDevoluciones() {
             subTotal: totalGeneral - (totalIVA10 + totalIVA5)
         }
     };
-
-    const {pagos} = factura.datosVentaImprimir
-    console.log(pagos);
-
-    /* console.log(factura.detalle[0].producto_nombre); */
 
     return (
         <div>
@@ -287,13 +259,6 @@ export default function ConsultarVentaYDevoluciones() {
                     >
 
                         Imprimir Factura
-                    </button>
-
-                    <button
-                        className="w-full md:w-40 p-2 rounded-md bg-green-500 text-white font-semibold shadow hover:bg-green-600"
-                        onClick={() => imprimirPDF(ventaSelect, "nota_credito")}
-                    >
-                        Imprimir Nota de Crédito
                     </button>
                 </div>
                 <div className="w-full">

@@ -709,7 +709,7 @@ export default function DevolucionVenta() {
                     Swal.fire("Error", "No se pudo registrar la nota de crédito", "error");
                 }
             } else {
-                Swal.fire("Atención", "No podes guardar la venta porque no tenes timbrado habilitado!", "error");
+                Swal.fire("Atención", "No podes guardar la Nota de Crédito porque no tenes timbrado habilitado!", "error");
             }
         } catch {
             Swal.fire("Error", "No se pudo registrar la nota de crédito", "error");

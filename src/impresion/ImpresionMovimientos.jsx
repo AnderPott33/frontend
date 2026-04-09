@@ -769,7 +769,7 @@ video {
               </div>
               <div id="igzb3" class="meta-item">
                 <div id="isdpo" class="cls-1xglms">Usuario</div>
-                <div id="imguu" class="cls-78vg8m">${movimiento.usuario}</div>
+                <div id="imguu" class="cls-78vg8m">${movimiento.usuario_nombre}</div>
               </div>
               <div id="it2ex" class="meta-item">
                 <div id="i4pd1" class="cls-d0687v">Referencia</div>
