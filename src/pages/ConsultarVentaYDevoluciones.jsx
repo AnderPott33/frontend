@@ -1,3 +1,6 @@
+import { pdf } from "@react-pdf/renderer";
+
+import FacturaPDF from '../impresion/ImpresionFactura2'
 import imprimirFactura from '../impresion/ImpresionFactura'
 import { useState, useEffect, useContext } from "react";
 import { AiOutlineFileSearch } from "react-icons/ai";
@@ -136,57 +139,57 @@ export default function ConsultarVentaYDevoluciones() {
         }
     }, [ventaSelect]);
 
- /*    const handleDevolucion = async () => {
-        if (!ventaSelect || !timbrado) {
-            Swal.fire("Error", "Primero selecciona una venta", "error");
-            return;
-        }
-
-        const { isConfirmed } = await Swal.fire({
-            title: `¿Seguro que querés generar la devolución y nota de crédito Nº: ${datosForm.nota_credito_N}?`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, devolver',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true,
-            focusCancel: true
-        });
-
-        if (!isConfirmed) return;
-
-        try {
-            const token = localStorage.getItem("token");
-
-            // Solo enviamos los datos mínimos necesarios
-            const payload = {
-                timbrado: datosForm.timbrado,
-                nota_credito_N: datosForm.nota_credito_N
-            };
-
-            const res = await axios.post(
-                `${API}/api/ventas/devolverVenta/${ventaSelect}`,
-                payload,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            if (res.data.ok) {
-                Swal.fire({
-                    title: 'Devolución generada correctamente',
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-                // Recarga las ventas y limpia selección si quieres
-                buscarVentas();
-            } else {
-                Swal.fire('Error', res.data.mensaje, 'error');
-            }
-
-        } catch (err) {
-            console.error(err);
-            Swal.fire('Error', 'Error al procesar la devolución', 'error');
-        }
-    }; */
+    /*    const handleDevolucion = async () => {
+           if (!ventaSelect || !timbrado) {
+               Swal.fire("Error", "Primero selecciona una venta", "error");
+               return;
+           }
+   
+           const { isConfirmed } = await Swal.fire({
+               title: `¿Seguro que querés generar la devolución y nota de crédito Nº: ${datosForm.nota_credito_N}?`,
+               icon: 'warning',
+               showCancelButton: true,
+               confirmButtonText: 'Sí, devolver',
+               cancelButtonText: 'Cancelar',
+               reverseButtons: true,
+               focusCancel: true
+           });
+   
+           if (!isConfirmed) return;
+   
+           try {
+               const token = localStorage.getItem("token");
+   
+               // Solo enviamos los datos mínimos necesarios
+               const payload = {
+                   timbrado: datosForm.timbrado,
+                   nota_credito_N: datosForm.nota_credito_N
+               };
+   
+               const res = await axios.post(
+                   `${API}/api/ventas/devolverVenta/${ventaSelect}`,
+                   payload,
+                   { headers: { Authorization: `Bearer ${token}` } }
+               );
+   
+               if (res.data.ok) {
+                   Swal.fire({
+                       title: 'Devolución generada correctamente',
+                       icon: 'success',
+                       timer: 2000,
+                       showConfirmButton: false
+                   });
+                   // Recarga las ventas y limpia selección si quieres
+                   buscarVentas();
+               } else {
+                   Swal.fire('Error', res.data.mensaje, 'error');
+               }
+   
+           } catch (err) {
+               console.error(err);
+               Swal.fire('Error', 'Error al procesar la devolución', 'error');
+           }
+       }; */
 
     const totalIVA5 = itemsLista.reduce(
         (acc, item) => acc + (item.impuesto_por === "5%" ? Number(item.impuesto || 0) : 0),
@@ -208,7 +211,7 @@ export default function ConsultarVentaYDevoluciones() {
     const activaPagoVenta = () => { setPagoVenta("active"); setRegistro(""); setMovimientos(""); };
 
 
-  
+
     const factura = {
         datosVentaImprimir,
         totales: {
@@ -218,6 +221,19 @@ export default function ConsultarVentaYDevoluciones() {
             totalIVA: totalIVA10 + totalIVA5,
             subTotal: totalGeneral - (totalIVA10 + totalIVA5)
         }
+    };
+
+    const handlePrint = async () => {
+        const instance = pdf(
+            <FacturaPDF factura={factura} />
+        );
+
+        const blob = await instance.toBlob();
+        const url = URL.createObjectURL(blob);
+
+        const win = window.open(url);
+
+        win.onload = () => win.print();
     };
 
     return (
@@ -256,6 +272,13 @@ export default function ConsultarVentaYDevoluciones() {
                     <button
                         onClick={() => imprimirFactura(factura)}
                         className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md"
+                    >
+
+                        Imprimir Factura
+                    </button>
+                    <button
+                        onClick={handlePrint}
+                        className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded-md"
                     >
 
                         Imprimir Factura
