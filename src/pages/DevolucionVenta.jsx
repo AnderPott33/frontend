@@ -489,8 +489,10 @@ export default function DevolucionVenta() {
     useEffect(() => {
         if (formEncabezado.condicion_pago === "CRÉDITO") {
             // Definir forma de pago padrão para CRÉDITO
-            const formaCredito = listaFormaPago.find(f => f.id === 7); // id do crédito
-            const cuentaCredito = listaCuentas.find(c => c.id === 9); // id da conta padrão
+            const formaCredito = listaFormaPago.find(f => f.id === 8); // id do crédito
+            const cuentaCredito = listaCuentas.find(c => c.id === 8); // id da conta padrão
+
+
 
             setFormPago(prev => ({
                 ...prev,
@@ -719,7 +721,6 @@ export default function DevolucionVenta() {
         }
     };
 
-
     /* Activado de secciones */
     const activaRegistro = () => {
         setRegistro("active");
@@ -736,6 +737,7 @@ export default function DevolucionVenta() {
         setRegistro("");
         setMovimientos("");
     };
+
 
     return (
         <>

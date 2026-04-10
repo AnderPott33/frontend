@@ -1,7 +1,7 @@
-  // src/impresion/ImpresionMovimientos.js
-  import { formatearFecha, formatearNumero, formatearSoloFecha } from "../components/FormatoFV";
+// src/impresion/ImpresionMovimientos.js
+import { formatearFecha, formatearNumero, formatearSoloFecha } from "../components/FormatoFV";
 
-  export default function imprimirFactura(factura) {
+export default function imprimirFactura(factura) {
     if (!factura) return;
     const { encabezado, detalle, pagos } = factura.datosVentaImprimir
     const { totales } = factura;
@@ -67,7 +67,7 @@
 
   <body>
 
-      <div class="hoja">
+      <div style="margin-left:auto;margin-right:auto;padding:16px;">
 
           <div style="border:2px solid #e5e7eb;padding:16px;border-radius:1rem;box-shadow:0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);">
               <!-- Header -->
@@ -103,12 +103,14 @@
               </header>
 
               <!-- Nota -->
-              <div style="border:2px solid #e5e7eb;border-radius:1rem;margin-bottom:16px;padding:12px;background-color:#f9fafb;">
-                  <span style="font-style:italic;font-size:0.875rem;color:#374151;">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet, alias quos. Numquam iste optio
-                      placeat quia earum, quibusdam possimus totam autem ullam ipsum aut aliquid mollitia accusantium
-                      nostrum minus. Tempore?
-                  </span>
+              <div style="border:2px solid #e5e7eb; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius:1rem;margin-bottom:16px;padding:12px;background-color:#f9fafb;">
+                  <div style="font-style:italic;font-size:0.875rem;color:#374151;display: flex; flex-direction: column;">
+                  Actividad económica: 6201 - Desarrollo de sistemas informáticos</div>
+                  <div style="font-style:italic;font-size:0.875rem;color:#374151;display: flex; flex-direction: column;">
+                  Actividad económica principal: 6201 - Desarrollo de sistemas informáticos</div>
+                  <div style="font-style:italic;font-size:0.875rem;color:#374151;display: flex; flex-direction: column;">
+                      Actividades secundarias: 6202 - Consultoría informática</div>
+                  
               </div>
 
               <!-- Cliente & Factura Info -->
@@ -141,7 +143,7 @@
                               </tr>
                           </thead>
                           <tbody style="color:#1f2937;">
-                          ${detalle.map(d=> `
+                          ${detalle.map(d => `
                               <tr style="background-color:#f9fafb;">
                                   <td style="padding:16px;border-bottom:1px solid #e5e7eb;">${`${d.producto_id} - ${d.producto_nombre}`}</td>
                                   <td style="padding:16px;text-align:right;border-bottom:1px solid #e5e7eb;">${d.cantidad}</td>
@@ -168,7 +170,7 @@
                                   </tr>
                               </thead>
                               <tbody style="color:#1f2937;">
-                              ${pagos.map(p=> `
+                              ${pagos.map(p => `
                                   <tr style="background-color:#f9fafb;">
                                       <td style="padding:16px;border-bottom:1px solid #e5e7eb;">${p.forma_pago}</td>
                                       <td style="padding:16px;text-align:left;border-bottom:1px solid #e5e7eb;">${p.cuenta_nombre}</td>
@@ -225,5 +227,5 @@
 
     const ventana = window.open("", "_blank");
     ventana.document.write(contenido);
-    
-  }
+
+}
