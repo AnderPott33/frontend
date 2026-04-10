@@ -41,7 +41,7 @@ import ImprimirMovimiento from './impresion/ImpresionMovimientos';
 
 function App() {
   return (
-    <Router basename="/Owl-Soft">
+    <Router >
       {/* 🔥 Provider debe estar aquí para poder usar useLocation dentro */}
       <CotizacionProvider>
         <Routes>
